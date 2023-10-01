@@ -1,0 +1,20 @@
+<ion-card class="ion-no-margin ion-margin-bottom">
+  <ion-card-header>
+    <ion-card-subtitle>{{scan.time | timeago}}</ion-card-subtitle>
+  </ion-card-header>
+
+  <ion-card-content>
+    <ion-text style="white-space: pre-wrap;">{{scan.value}}</ion-text>
+  </ion-card-content>
+  <div class="d-flex ion-justify-content-around">
+    <ion-button fill="clear" (click)="copy(scan.value);">
+      <ion-icon name="clipboard-outline"></ion-icon>
+    </ion-button>
+    <ion-button fill="clear" [routerLink]="['/create']" [queryParams]="{message: scan.value}">
+      <ion-icon name="qr-code-outline"></ion-icon>
+    </ion-button>
+    <ion-button fill="clear" color="danger" horizontal="end" (click)="remove(scan)">
+      <ion-icon name="trash-outline"></ion-icon>
+    </ion-button>
+  </div>
+</ion-card>

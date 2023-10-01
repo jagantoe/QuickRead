@@ -1,0 +1,17 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>History</ion-title>
+    <ion-button fill="clear" slot="end" color="danger" (click)="clearAlert.present()">
+      <ion-icon name="trash-outline"></ion-icon>
+    </ion-button>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <ng-container *ngFor="let scan of history$()">
+    <app-scan-card [scan]="scan" (copied)="toast.present()" />
+  </ng-container>
+
+  <ion-toast #toast message="Message copied!" position="top" [duration]="1000"></ion-toast>
+  <ion-alert #clearAlert header="Do you want to clear your history?" [buttons]="clearAlertButtons"></ion-alert>
+</ion-content>
