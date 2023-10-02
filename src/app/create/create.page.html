@@ -6,7 +6,7 @@
 
 <ion-content [fullscreen]="true" class="ion-padding">
   <ion-textarea label="Message" labelPlacement="floating" [(ngModel)]="message" [counter]="true" [autofocus]="true"
-    maxlength="2331" rows="20"></ion-textarea>
+    maxlength="2331" rows="10"></ion-textarea>
   <div class="d-flex ion-justify-content-between">
     <ion-button fill="clear" [disabled]="!message" color="danger" (click)="message = ''">Clear</ion-button>
     <ion-button fill="clear" slot="end" [disabled]="!message" color="success"
