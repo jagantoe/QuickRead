@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { NgxScannerQrcodeComponent, ScannerQRCodeResult } from 'ngx-scanner-qrcode';
 import { filter, firstValueFrom, timer } from 'rxjs';
 import { ScanService } from '../scan.service';
@@ -9,16 +9,12 @@ import { Scan } from '../types/scan';
   templateUrl: './scan.page.html',
   styleUrls: ['./scan.page.scss'],
 })
-export class ScanPage implements OnInit {
+export class ScanPage {
   scan: Scan | null = null;
   settings$;
   constructor(private scanService: ScanService) {
     this.settings$ = this.scanService.settings$;
   }
-
-  ngOnInit() {
-  }
-
   scanner!: NgxScannerQrcodeComponent;
   @ViewChild("action")
   public set _scanner(s: NgxScannerQrcodeComponent) {
@@ -52,5 +48,9 @@ export class ScanPage implements OnInit {
     this.scan = { time: new Date(), value: result[0].value };
     this.scanner.stop();
     this.scanService.addScan(this.scan);
+  }
+
+  removed() {
+    this.scan = null;
   }
 }

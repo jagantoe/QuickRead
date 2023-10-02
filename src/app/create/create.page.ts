@@ -9,15 +9,13 @@ import { ScanService } from '../scan.service';
   styleUrls: ['./create.page.scss'],
 })
 export class CreatePage implements ViewWillEnter {
-
   message!: string;
   private innerWidth = window.innerWidth;
   private innerHeight = window.innerHeight;
   private maxModalHeight = 595; // On desktop modal is only 600px minus 5px to prevent scroll
   width = this.innerWidth > this.maxModalHeight ? this.maxModalHeight : this.innerHeight < this.innerWidth ? this.innerHeight : this.innerWidth;
 
-  constructor(private route: ActivatedRoute, private scanService: ScanService) {
-  }
+  constructor(private route: ActivatedRoute, private scanService: ScanService) { }
 
   ionViewWillEnter() {
     var message = this.route.snapshot.queryParamMap.get('message');

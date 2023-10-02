@@ -7,9 +7,8 @@ import { ScanService } from '../scan.service';
   styleUrls: ['./history.page.scss'],
 })
 export class HistoryPage {
-
   history$;
-  public clearAlertButtons = [
+  clearAlertButtons = [
     {
       text: 'Cancel',
       role: 'cancel'
@@ -22,6 +21,7 @@ export class HistoryPage {
       },
     },
   ];
+
   constructor(public scanService: ScanService) {
     this.history$ = scanService.history$;
   }

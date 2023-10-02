@@ -8,10 +8,11 @@ import { Scan } from '../types/scan';
   styleUrls: ['./scan-card.component.scss'],
 })
 export class ScanCardComponent {
-  constructor(private scanService: ScanService) { }
-
   @Input({ required: true }) scan!: Scan
   @Output() copied = new EventEmitter<any>();
+  @Output() removed = new EventEmitter<any>();
+
+  constructor(private scanService: ScanService) { }
 
   copy(value: string) {
     navigator.clipboard.writeText(value);
@@ -20,5 +21,6 @@ export class ScanCardComponent {
 
   remove(scan: Scan) {
     this.scanService.removeScan(scan);
+    this.removed.next(null);
   }
 }

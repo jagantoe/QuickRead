@@ -9,7 +9,7 @@
   <ion-button (click)="modal.present();" expand="block" fill="clear">Scan</ion-button>
 
   <ng-container *ngIf="scan">
-    <app-scan-card [scan]="scan" />
+    <app-scan-card [scan]="scan" (removed)="removed()" />
   </ng-container>
 
   <ion-modal #modal>
