@@ -1,5 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { NgxScannerQrcodeComponent, ScannerQRCodeResult } from 'ngx-scanner-qrcode';
+import { filter, firstValueFrom, timer } from 'rxjs';
 import { ScanService } from '../scan.service';
 import { Scan } from '../types/scan';
 
@@ -23,13 +24,16 @@ export class ScanPage implements OnInit {
   public set _scanner(s: NgxScannerQrcodeComponent) {
     this.scanner = s;
     if (s) {
-      setTimeout(() => {
-        let settings = this.settings$();
-        if (settings.preferedDevice) this.scanner.playDevice(settings.preferedDevice);
-        if (settings.preferedDecoding) this.scanner.decode = settings.preferedDecoding;
-        this.scanner.start();
-      }, 10);
+      this.scanner.start();
+      this.setSettings();
     }
+  }
+
+  async setSettings() {
+    await firstValueFrom(timer(5, 5).pipe(filter(x => this.scanner.isStart)));
+    let settings = this.settings$();
+    if (settings.preferedDevice) this.scanner.playDevice(settings.preferedDevice);
+    if (settings.preferedDecoding) this.scanner.decode = settings.preferedDecoding;
   }
 
   changeDevice(event: any) {
