@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Storage } from '@ionic/storage-angular';
 import { Observable, firstValueFrom, from, shareReplay } from 'rxjs';
 import { Scan } from './types/scan';
@@ -8,14 +8,13 @@ import { Settings } from './types/settings';
   providedIn: 'root'
 })
 export class StorageService {
+  private ionicStorage = inject(Storage);
 
   private storage$: Observable<Storage> = from(this.ionicStorage.create()).pipe(shareReplay(1));
 
   public get storage(): Promise<Storage> {
     return firstValueFrom(this.storage$);
   }
-
-  constructor(private ionicStorage: Storage) { }
 
   private readonly history_key = "history";
   public async getHistory(): Promise<Scan[]> {

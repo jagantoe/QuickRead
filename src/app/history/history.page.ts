@@ -1,13 +1,16 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { ScanService } from '../scan.service';
 
 @Component({
   selector: 'app-history',
   templateUrl: './history.page.html',
   styleUrls: ['./history.page.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class HistoryPage {
-  history$;
+  scanService = inject(ScanService);
+
+  history$ = this.scanService.history$;
   clearAlertButtons = [
     {
       text: 'Cancel',
@@ -21,10 +24,6 @@ export class HistoryPage {
       },
     },
   ];
-
-  constructor(public scanService: ScanService) {
-    this.history$ = scanService.history$;
-  }
 
   clear() {
     this.scanService.clearHistory();

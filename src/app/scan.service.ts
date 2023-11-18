@@ -1,4 +1,4 @@
-import { Injectable, effect, signal } from '@angular/core';
+import { Injectable, effect, inject, signal } from '@angular/core';
 import { StorageService } from './storage.service';
 import { Scan } from './types/scan';
 import { Settings } from './types/settings';
@@ -7,6 +7,7 @@ import { Settings } from './types/settings';
   providedIn: 'root'
 })
 export class ScanService {
+  storageService = inject(StorageService);
 
   private history = signal(null! as Scan[]);
   private settings = signal(null! as Settings);
@@ -14,7 +15,7 @@ export class ScanService {
   public history$ = this.history.asReadonly();
   public settings$ = this.settings.asReadonly();
 
-  constructor(private storageService: StorageService) {
+  constructor() {
     this.load();
     effect(() => this.saveHistory(this.history()));
     effect(() => this.saveSettings(this.settings()));

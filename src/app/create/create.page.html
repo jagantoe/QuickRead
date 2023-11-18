@@ -5,10 +5,10 @@
 </ion-header>
 
 <ion-content [fullscreen]="true" class="ion-padding">
-  <ion-textarea label="Message" labelPlacement="floating" [(ngModel)]="message" [counter]="true" [autofocus]="true"
-    maxlength="2331" rows="10"></ion-textarea>
+  <ion-textarea label="Message" labelPlacement="floating" [ngModel]="message()" (ngModelChange)="message.set($event)"
+    [counter]="true" [autofocus]="true" maxlength="2331" rows="10"></ion-textarea>
   <div class="d-flex ion-justify-content-between">
-    <ion-button fill="clear" [disabled]="!message" color="danger" (click)="message = ''">Clear</ion-button>
+    <ion-button fill="clear" [disabled]="!message" color="danger" (click)="message.set('')">Clear</ion-button>
     <ion-button fill="clear" slot="end" [disabled]="!message" color="success"
       (click)="save();toast.present();">Save</ion-button>
   </div>
@@ -17,7 +17,7 @@
     <ng-template>
       <ion-content (click)="modal.dismiss()">
         <div class="qr-center">
-          <qrcode [qrdata]="message" [width]="width" [errorCorrectionLevel]="'M'"></qrcode>
+          <qrcode [qrdata]="message()" [width]="width" [errorCorrectionLevel]="'M'"></qrcode>
         </div>
       </ion-content>
     </ng-template>

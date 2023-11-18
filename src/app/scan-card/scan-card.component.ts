@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { ScanService } from '../scan.service';
 import { Scan } from '../types/scan';
 
@@ -8,11 +8,11 @@ import { Scan } from '../types/scan';
   styleUrls: ['./scan-card.component.scss'],
 })
 export class ScanCardComponent {
+  scanService = inject(ScanService);
+
   @Input({ required: true }) scan!: Scan
   @Output() copied = new EventEmitter<any>();
   @Output() removed = new EventEmitter<any>();
-
-  constructor(private scanService: ScanService) { }
 
   copy(value: string) {
     navigator.clipboard.writeText(value);

@@ -1,4 +1,4 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, inject } from '@angular/core';
 import { NgxScannerQrcodeComponent, ScannerQRCodeResult } from 'ngx-scanner-qrcode';
 import { filter, firstValueFrom, timer } from 'rxjs';
 import { ScanService } from '../scan.service';
@@ -10,21 +10,19 @@ import { Scan } from '../types/scan';
   styleUrls: ['./scan.page.scss'],
 })
 export class ScanPage {
+  scanService = inject(ScanService);
+
   scan: Scan | null = null;
-  settings$;
-  constructor(private scanService: ScanService) {
-    this.settings$ = this.scanService.settings$;
-  }
+  settings$ = this.scanService.settings$;
   scanner!: NgxScannerQrcodeComponent;
   @ViewChild("action")
   public set _scanner(s: NgxScannerQrcodeComponent) {
     this.scanner = s;
     if (s) {
-      this.scanner.start();
+      setTimeout(() => this.scanner.start(), 10);
       this.setSettings();
     }
   }
-
   async setSettings() {
     await firstValueFrom(timer(5, 5).pipe(filter(x => this.scanner.isStart)));
     let settings = this.settings$();
