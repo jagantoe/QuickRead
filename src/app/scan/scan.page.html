@@ -8,9 +8,9 @@
 
   <ion-button (click)="modal.present();" expand="block" fill="clear">Scan</ion-button>
 
-  <ng-container *ngIf="scan">
-    <app-scan-card [scan]="scan" (removed)="removed()" />
-  </ng-container>
+  @if (scan) {
+  <app-scan-card [scan]="scan" (removed)="removed()" />
+  }
 
   <ion-modal #modal>
     <ng-template>
@@ -22,8 +22,9 @@
           <ion-select label="Camera" placeholder="default" (ionChange)="changeDevice($event)" #deviceSelect
             class="ion-padding">
             <ion-select-option [value]="null">Select device</ion-select-option>
-            <ion-select-option *ngFor="let c of action.devices.value; let i = index"
-              [value]="c.deviceId">{{c.label}}</ion-select-option>
+            @for (c of action.devices.value; track c.deviceId; let i = $index) {
+            <ion-select-option [value]="c.deviceId">{{c.label}}</ion-select-option>
+            }
           </ion-select>
 
           <ion-select label="Decoding" placeholder="default" (ionChange)="changeDecoding($event)" #decodingSelect

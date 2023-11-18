@@ -21,10 +21,10 @@ export class ScanService {
   }
 
   public addScan(scan: Scan) {
-    this.history.mutate(history => history.unshift(scan));
+    this.history.update(history => [scan, ...history]);
   }
   public removeScan(scan: Scan) {
-    this.history.mutate(history => history.splice(history.indexOf(scan), 1));
+    this.history.update(history => history.filter(s => s == scan));
   }
   public clearHistory() {
     this.history.set([]);
@@ -34,10 +34,10 @@ export class ScanService {
     await this.storageService.setHistory(history);
   }
   public setDevice(device: string | null) {
-    this.settings.mutate(settings => settings.preferedDevice = device);
+    this.settings.update(settings => ({ ...settings, preferedDevice: device }));
   }
   public setDecoding(decoding: string | null) {
-    this.settings.mutate(settings => settings.preferedDecoding = decoding);
+    this.settings.update(settings => ({ ...settings, preferedDecoding: decoding }));
   }
   private async saveSettings(settings: Settings) {
     if (settings == null) return;
