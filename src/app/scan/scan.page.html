@@ -6,38 +6,16 @@
 
 <ion-content [fullscreen]="true" class="ion-padding">
 
-  <ion-button (click)="modal.present();" expand="block" fill="clear">Scan</ion-button>
+  <ion-button (click)="modal.present()" expand="block" fill="clear">Scan</ion-button>
 
-  @if (scan) {
+  @if (scan(); as scan) {
   <app-scan-card [scan]="scan" (removed)="removed()" />
   }
 
   <ion-modal #modal>
     <ng-template>
       <ion-content>
-        <div class="scanner-center">
-          <ngx-scanner-qrcode #action [config]="{ isBeep: false }"
-            (event)="handleScan($event);modal.dismiss();"></ngx-scanner-qrcode>
-
-          <ion-select label="Camera" placeholder="default" (ionChange)="changeDevice($event)" #deviceSelect
-            class="ion-padding">
-            <ion-select-option [value]="null">Select device</ion-select-option>
-            @for (c of action.devices.value; track c.deviceId; let i = $index) {
-            <ion-select-option [value]="c.deviceId">{{c.label}}</ion-select-option>
-            }
-          </ion-select>
-
-          <ion-select label="Decoding" placeholder="default" (ionChange)="changeDecoding($event)" #decodingSelect
-            class="ion-padding">
-            <ion-select-option value="utf-8">UTF-8</ion-select-option>
-            <ion-select-option value="iso-8859-15">ISO-8859-15</ion-select-option>
-            <ion-select-option value="windows-1252">Windows-1252</ion-select-option>
-            <ion-select-option value="macintosh">Macintosh</ion-select-option>
-          </ion-select>
-
-          <ion-button fill="clear" expand="block" color="danger" [disabled]="action.isLoading"
-            (click)="action.stop();modal.dismiss();">Cancel</ion-button>
-        </div>
+        <app-cam (finished)="process($event);modal.dismiss();" />
       </ion-content>
     </ng-template>
   </ion-modal>

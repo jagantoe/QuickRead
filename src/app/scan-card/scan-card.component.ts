@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { ScanService } from '../scan.service';
 import { Scan } from '../types/scan';
 
@@ -6,6 +6,7 @@ import { Scan } from '../types/scan';
   selector: 'app-scan-card',
   templateUrl: './scan-card.component.html',
   styleUrls: ['./scan-card.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ScanCardComponent {
   scanService = inject(ScanService);
