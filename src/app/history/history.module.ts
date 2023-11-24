@@ -7,18 +7,17 @@ import { IonicModule } from '@ionic/angular';
 import { HistoryPageRoutingModule } from './history-routing.module';
 
 import { TimeagoModule } from 'ngx-timeago';
-import { SharedModule } from '../shared.module';
+
 import { HistoryPage } from './history.page';
 
 @NgModule({
     imports: [
-        CommonModule,
-        FormsModule,
-        IonicModule,
-        HistoryPageRoutingModule,
-        TimeagoModule,
-        SharedModule,
-        HistoryPage
-    ]
+    CommonModule,
+    FormsModule,
+    IonicModule,
+    HistoryPageRoutingModule,
+    TimeagoModule,
+    HistoryPage
+]
 })
 export class HistoryPageModule { }

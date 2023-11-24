@@ -8,7 +8,7 @@ import { ScanPageRoutingModule } from './scan-routing.module';
 
 import { LOAD_WASM, NgxScannerQrcodeModule } from 'ngx-scanner-qrcode';
 import { CamComponent } from '../cam/cam.component';
-import { SharedModule } from '../shared.module';
+
 import { ScanPage } from './scan.page';
 
 LOAD_WASM().subscribe((res: any) => console.log('LOAD_WASM', res));
@@ -20,8 +20,8 @@ LOAD_WASM().subscribe((res: any) => console.log('LOAD_WASM', res));
         IonicModule,
         ScanPageRoutingModule,
         NgxScannerQrcodeModule,
-        SharedModule,
-        ScanPage, CamComponent
+        ScanPage,
+        CamComponent
     ]
 })
 export class ScanPageModule { }
