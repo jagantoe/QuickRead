@@ -25,7 +25,7 @@ export class ScanService {
     this.history.update(history => [scan, ...history]);
   }
   public removeScan(scan: Scan) {
-    this.history.update(history => history.filter(s => s == scan));
+    this.history.update(history => history.filter(s => s != scan));
   }
   public clearHistory() {
     this.history.set([]);

@@ -1,5 +1,8 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { CreatePage } from '../create/create.page';
+import { HistoryPage } from '../history/history.page';
+import { ScanPage } from '../scan/scan.page';
 import { TabsPage } from './tabs.page';
 
 const routes: Routes = [
@@ -9,15 +12,15 @@ const routes: Routes = [
     children: [
       {
         path: 'create',
-        loadChildren: () => import('../create/create.module').then(m => m.CreatePageModule)
+        component: CreatePage
       },
       {
         path: 'scan',
-        loadChildren: () => import('../scan/scan.module').then(m => m.ScanPageModule)
+        component: ScanPage
       },
       {
         path: 'history',
-        loadChildren: () => import('../history/history.module').then(m => m.HistoryPageModule)
+        component: HistoryPage
       },
       {
         path: '',
