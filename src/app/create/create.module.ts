@@ -10,13 +10,13 @@ import { QRCodeModule } from 'angularx-qrcode';
 import { CreatePage } from './create.page';
 
 @NgModule({
-  imports: [
-    CommonModule,
-    FormsModule,
-    IonicModule,
-    CreatePageRoutingModule,
-    QRCodeModule
-  ],
-  declarations: [CreatePage]
+    imports: [
+        CommonModule,
+        FormsModule,
+        IonicModule,
+        CreatePageRoutingModule,
+        QRCodeModule,
+        CreatePage
+    ]
 })
 export class CreatePageModule { }

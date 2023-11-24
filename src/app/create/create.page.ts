@@ -1,13 +1,17 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { ViewWillEnter } from '@ionic/angular';
+import { ViewWillEnter, IonicModule } from '@ionic/angular';
 import { ScanService } from '../scan.service';
+import { QRCodeModule } from 'angularx-qrcode';
+import { FormsModule } from '@angular/forms';
 
 @Component({
-  selector: 'app-create',
-  templateUrl: './create.page.html',
-  styleUrls: ['./create.page.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+    selector: 'app-create',
+    templateUrl: './create.page.html',
+    styleUrls: ['./create.page.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
+    imports: [IonicModule, FormsModule, QRCodeModule]
 })
 export class CreatePage implements ViewWillEnter {
   route = inject(ActivatedRoute);

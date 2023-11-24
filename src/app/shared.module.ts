@@ -5,13 +5,11 @@ import { TimeagoModule } from "ngx-timeago";
 import { ScanCardComponent } from "./scan-card/scan-card.component";
 
 @NgModule({
-    declarations: [
-        ScanCardComponent
-    ],
     imports: [
         IonicModule,
         RouterModule,
-        TimeagoModule
+        TimeagoModule,
+        ScanCardComponent
     ],
     exports: [
         ScanCardComponent

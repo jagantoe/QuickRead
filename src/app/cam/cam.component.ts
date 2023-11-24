@@ -1,13 +1,16 @@
 import { Component, EventEmitter, OnDestroy, Output, ViewChild, inject } from '@angular/core';
-import { NgxScannerQrcodeComponent, ScannerQRCodeResult } from 'ngx-scanner-qrcode';
+import { NgxScannerQrcodeComponent, ScannerQRCodeResult, NgxScannerQrcodeModule } from 'ngx-scanner-qrcode';
 import { filter, firstValueFrom, share, timer } from 'rxjs';
 import { ScanService } from '../scan.service';
 import { Scan } from '../types/scan';
+import { IonicModule } from '@ionic/angular';
 
 @Component({
-  selector: 'app-cam',
-  templateUrl: './cam.component.html',
-  styleUrls: ['./cam.component.scss']
+    selector: 'app-cam',
+    templateUrl: './cam.component.html',
+    styleUrls: ['./cam.component.scss'],
+    standalone: true,
+    imports: [NgxScannerQrcodeModule, IonicModule]
 })
 export class CamComponent implements OnDestroy {
 

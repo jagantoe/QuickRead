@@ -11,14 +11,14 @@ import { SharedModule } from '../shared.module';
 import { HistoryPage } from './history.page';
 
 @NgModule({
-  imports: [
-    CommonModule,
-    FormsModule,
-    IonicModule,
-    HistoryPageRoutingModule,
-    TimeagoModule,
-    SharedModule
-  ],
-  declarations: [HistoryPage]
+    imports: [
+        CommonModule,
+        FormsModule,
+        IonicModule,
+        HistoryPageRoutingModule,
+        TimeagoModule,
+        SharedModule,
+        HistoryPage
+    ]
 })
 export class HistoryPageModule { }

@@ -14,14 +14,14 @@ import { ScanPage } from './scan.page';
 LOAD_WASM().subscribe((res: any) => console.log('LOAD_WASM', res));
 
 @NgModule({
-  declarations: [ScanPage, CamComponent],
-  imports: [
-    CommonModule,
-    FormsModule,
-    IonicModule,
-    ScanPageRoutingModule,
-    NgxScannerQrcodeModule,
-    SharedModule
-  ]
+    imports: [
+        CommonModule,
+        FormsModule,
+        IonicModule,
+        ScanPageRoutingModule,
+        NgxScannerQrcodeModule,
+        SharedModule,
+        ScanPage, CamComponent
+    ]
 })
 export class ScanPageModule { }
