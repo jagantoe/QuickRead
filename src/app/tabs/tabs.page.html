@@ -1,17 +1,17 @@
 <ion-tabs>
 
   <ion-tab-bar slot="bottom">
-    <ion-tab-button tab="create" href="/create">
+    <ion-tab-button routerLink="create" skipLocationChange>
       <ion-icon aria-hidden="true" name="qr-code-outline"></ion-icon>
       <ion-label>Create</ion-label>
     </ion-tab-button>
 
-    <ion-tab-button tab="scan" href="/scan">
+    <ion-tab-button routerLink="scan" skipLocationChange>
       <ion-icon aria-hidden="true" name="camera-outline"></ion-icon>
       <ion-label>Scan</ion-label>
     </ion-tab-button>
 
-    <ion-tab-button tab="history" href="/history">
+    <ion-tab-button routerLink="history" skipLocationChange>
       <ion-icon aria-hidden="true" name="list-outline"></ion-icon>
       <ion-label>History</ion-label>
     </ion-tab-button>

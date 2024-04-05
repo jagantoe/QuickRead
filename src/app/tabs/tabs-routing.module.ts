@@ -24,15 +24,9 @@ const routes: Routes = [
       },
       {
         path: '',
-        redirectTo: '/create',
-        pathMatch: 'full'
+        component: CreatePage
       }
     ]
-  },
-  {
-    path: '',
-    redirectTo: '/create',
-    pathMatch: 'full'
   }
 ];
 
