@@ -1,0 +1,16 @@
+{
+    "name": "QuickRead",
+    "short_name": "QR",
+    "description": "Generate, scan, and manage QR codes and barcodes",
+    "start_url": "./",
+    "display": "standalone",
+    "background_color": "#000000",
+    "theme_color": "#00A3FF",
+    "orientation": "portrait",
+    "icons": [{
+        "src": "favicon.svg",
+        "sizes": "any",
+        "type": "image/svg+xml",
+        "purpose": "maskable any"
+    }]
+}

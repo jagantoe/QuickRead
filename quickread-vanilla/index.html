@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Theme color — update this when switching color themes below -->
+    <meta name="theme-color" content="#00A3FF">
+    <title>QuickRead</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="favicon.svg">
+
+    <!-- Tailwind CSS (CDN — no build step required) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- QR Code Generation -->
+    <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+
+    <!-- QR / Barcode Scanning -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'media',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            DEFAULT: 'rgb(var(--color-primary) / <alpha-value>)',
+                            dark: 'rgb(var(--color-primary-dark) / <alpha-value>)',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* =============================================
+     * COLOR THEMES
+     * Uncomment ONE theme block and comment
+     * the others. Also update <meta theme-color>
+     * above to match.
+     * ============================================= */
+
+        /* --- Ocean Blue (Default) --- */
+        :root {
+            --color-primary: 0 163 255;
+            /* #00A3FF */
+            --color-primary-dark: 0 130 210;
+            /* #0082D2 */
+        }
+
+        /* --- Emerald Green ---
+    :root {
+      --color-primary: 16 185 129;
+      --color-primary-dark: 5 150 105;
+    } */
+
+        /* --- Royal Purple ---
+    :root {
+      --color-primary: 139 92 246;
+      --color-primary-dark: 124 58 237;
+    } */
+
+        /* --- Sunset Orange ---
+    :root {
+      --color-primary: 249 115 22;
+      --color-primary-dark: 234 88 12;
+    } */
+
+        /* --- Rose Pink ---
+    :root {
+      --color-primary: 244 63 94;
+      --color-primary-dark: 225 29 72;
+    } */
+
+        /* --- Teal ---
+    :root {
+      --color-primary: 20 184 166;
+      --color-primary-dark: 13 148 136;
+    } */
+
+        /* Safe area insets for notched phones */
+        body {
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
+            overscroll-behavior: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Modal transitions */
+        .modal {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .modal.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        /* Toast transitions */
+        #toast {
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        /* Page transitions */
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: flex;
+        }
+
+        /* Hide html5-qrcode default UI elements we don't need */
+        #reader__dashboard_section_swaplink,
+        #reader__status_span {
+            display: none !important;
+        }
+
+        #reader video {
+            border-radius: 0.25rem;
+        }
+
+        #reader__scan_region {
+            min-height: 0 !important;
+        }
+
+        #reader__scan_region video {
+            border-radius: 0.25rem !important;
+        }
+
+        #reader {
+            border: none !important;
+        }
+
+        /* Flat text buttons — expand bg on hover */
+        .btn-flat {
+            background: transparent;
+            transition: background-color 0.15s ease, color 0.15s ease;
+        }
+
+        .btn-flat:hover,
+        .btn-flat:active {
+            border-radius: 0.25rem;
+        }
+
+        /* Canvas centering - remove all default spacing */
+        #qr-canvas {
+            display: block;
+            margin: 0 !important;
+            border: none !important;
+        }
+    </style>
+</head>
+
+<body class="h-full bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 select-none">
+
+    <div id="app" class="h-full flex flex-col">
+
+        <!-- ─────────────────────────────────────────
+         CREATE TAB
+    ────────────────────────────────────────── -->
+        <div id="page-create" class="page flex-col flex-1">
+            <!-- Header -->
+            <header
+                class="flex items-center justify-between px-4 pt-4 pb-2 border-b border-gray-200 dark:border-gray-800">
+                <h1 class="text-xl font-semibold">Create</h1>
+            </header>
+
+            <!-- Content -->
+            <div class="flex-1 overflow-y-auto px-4 pb-4 flex flex-col">
+                <!-- Textarea -->
+                <div class="relative mt-3 mb-1">
+                    <label
+                        class="text-xs uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-1 block">Message</label>
+                    <textarea id="create-input"
+                        class="w-full h-40 p-3 rounded bg-white dark:bg-gray-900 border-b border-gray-300 dark:border-gray-700 text-sm resize-none focus:outline-none focus:border-primary placeholder-gray-400 dark:placeholder-gray-600"
+                        maxlength="2331" placeholder="Enter text..." autofocus></textarea>
+                    <span id="char-count" class="text-[11px] text-gray-400 dark:text-gray-600 text-right block mt-0.5">0
+                        / 2331</span>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex justify-between items-center py-2">
+                    <button id="btn-clear"
+                        class="btn-flat px-4 py-2 text-red-500 font-semibold text-xs uppercase tracking-wider hover:bg-red-500/10">
+                        Clear
+                    </button>
+                    <button id="btn-save"
+                        class="btn-flat px-4 py-2 text-emerald-500 font-semibold text-xs uppercase tracking-wider hover:bg-emerald-500/10">
+                        Save
+                    </button>
+                </div>
+
+                <!-- Preview Button -->
+                <button id="btn-preview"
+                    class="btn-flat w-full py-3 text-primary font-semibold text-sm uppercase tracking-wider hover:bg-primary/10 rounded text-center">
+                    Open
+                </button>
+            </div>
+        </div>
+
+        <!-- ─────────────────────────────────────────
+         SCAN TAB
+    ────────────────────────────────────────── -->
+        <div id="page-scan" class="page flex-col flex-1">
+            <!-- Header -->
+            <header
+                class="flex items-center justify-between px-4 pt-4 pb-2 border-b border-gray-200 dark:border-gray-800">
+                <h1 class="text-xl font-semibold">Scan</h1>
+            </header>
+
+            <!-- Content -->
+            <div class="flex-1 overflow-y-auto px-4 pb-4 flex flex-col">
+                <!-- Open Scanner Button -->
+                <button id="btn-scan"
+                    class="btn-flat w-full py-4 mt-4 text-primary font-semibold text-sm uppercase tracking-wider hover:bg-primary/10 rounded flex items-center justify-center gap-2 mb-4">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0Z" />
+                    </svg>
+                    Scan
+                </button>
+
+                <!-- Last Scan Result -->
+                <div id="last-scan" class="hidden"></div>
+            </div>
+        </div>
+
+        <!-- ─────────────────────────────────────────
+         HISTORY TAB
+    ────────────────────────────────────────── -->
+        <div id="page-history" class="page flex-col flex-1">
+            <!-- Header -->
+            <header
+                class="flex items-center justify-between px-4 pt-4 pb-2 border-b border-gray-200 dark:border-gray-800">
+                <h1 class="text-xl font-semibold">History</h1>
+                <button id="btn-clear-all"
+                    class="btn-flat p-2 text-red-500 hover:bg-red-500/10 rounded transition-colors hidden">
+                    <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                    </svg>
+                </button>
+            </header>
+
+            <!-- Content -->
+            <div class="flex-1 overflow-y-auto px-4 pb-4">
+                <div id="history-list"></div>
+                <div id="history-empty"
+                    class="hidden flex-1 flex flex-col items-center justify-center text-gray-400 dark:text-gray-600 py-20">
+                    <svg class="w-16 h-16 mb-4 opacity-50" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="1">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                    </svg>
+                    <p class="text-lg font-medium">No scans yet</p>
+                    <p class="text-sm mt-1">Scanned and saved QR codes will appear here</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ─────────────────────────────────────────
+         BOTTOM TAB BAR
+    ────────────────────────────────────────── -->
+        <nav class="flex items-stretch border-t border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur shrink-0"
+            style="padding-bottom: env(safe-area-inset-bottom)">
+            <button class="tab-btn flex-1 flex flex-col items-center justify-center py-2 gap-0.5 transition-colors"
+                data-tab="create">
+                <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <rect x="3" y="3" width="7" height="7" rx="1" />
+                    <rect x="14" y="3" width="7" height="7" rx="1" />
+                    <rect x="3" y="14" width="7" height="7" rx="1" />
+                    <rect x="14" y="14" width="3.5" height="3.5" />
+                    <rect x="17.5" y="14" width="3.5" height="3.5" />
+                    <rect x="14" y="17.5" width="3.5" height="3.5" />
+                    <rect x="17.5" y="17.5" width="3.5" height="3.5" />
+                </svg>
+                <span class="text-[10px] font-medium">Create</span>
+            </button>
+            <button class="tab-btn flex-1 flex flex-col items-center justify-center py-2 gap-0.5 transition-colors"
+                data-tab="scan">
+                <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0Z" />
+                </svg>
+                <span class="text-[10px] font-medium">Scan</span>
+            </button>
+            <button class="tab-btn flex-1 flex flex-col items-center justify-center py-2 gap-0.5 transition-colors"
+                data-tab="history">
+                <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                </svg>
+                <span class="text-[10px] font-medium">History</span>
+            </button>
+        </nav>
+
+    </div>
+
+    <!-- ─────────────────────────────────────────
+       QR PREVIEW MODAL
+  ────────────────────────────────────────── -->
+    <div id="modal-preview" class="modal fixed inset-0 z-50 items-center justify-center bg-black/90">
+        <div class="relative w-full h-full flex flex-col items-center justify-center p-6">
+            <canvas id="qr-canvas" class="rounded bg-white block ps-3 pt-3 pe-[5.5px] pb-[5.5px]"></canvas>
+            <button id="btn-close-preview"
+                class="btn-flat mt-6 px-6 py-2 text-white/70 hover:text-white font-semibold text-xs uppercase tracking-wider hover:bg-white/10 rounded">
+                Close
+            </button>
+        </div>
+    </div>
+
+    <!-- ─────────────────────────────────────────
+       SCANNER MODAL
+  ────────────────────────────────────────── -->
+    <div id="modal-scanner" class="modal fixed inset-0 z-50 flex-col bg-black">
+        <!-- Top bar -->
+        <div class="flex items-center justify-between p-4 gap-3 shrink-0">
+            <select id="camera-select"
+                class="flex-1 px-3 py-2 rounded bg-gray-800 text-white text-sm border border-gray-700 focus:outline-none">
+                <option>Loading cameras...</option>
+            </select>
+            <button id="btn-close-scanner"
+                class="btn-flat px-4 py-2 text-white/70 hover:text-white font-semibold text-xs uppercase tracking-wider hover:bg-white/10 rounded">
+                Close
+            </button>
+        </div>
+        <!-- Reader container -->
+        <div class="flex-1 flex items-center justify-center overflow-hidden px-4 pb-4">
+            <div id="reader" class="w-full max-w-md"></div>
+        </div>
+    </div>
+
+    <!-- ─────────────────────────────────────────
+       CONFIRM CLEAR ALL MODAL
+  ────────────────────────────────────────── -->
+    <div id="modal-confirm" class="modal fixed inset-0 z-50 items-center justify-center bg-black/60 p-6">
+        <div class="bg-white dark:bg-gray-800 rounded-lg p-5 max-w-sm w-full shadow-xl">
+            <h2 class="text-base font-semibold mb-1.5">Clear History</h2>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-5">Delete all scan history? This cannot be undone.</p>
+            <div class="flex justify-end gap-4">
+                <button id="btn-cancel-clear"
+                    class="btn-flat px-4 py-2 text-gray-500 dark:text-gray-400 font-semibold text-xs uppercase tracking-wider hover:bg-gray-500/10 rounded">
+                    Cancel
+                </button>
+                <button id="btn-confirm-clear"
+                    class="btn-flat px-4 py-2 text-red-500 font-semibold text-xs uppercase tracking-wider hover:bg-red-500/10 rounded">
+                    Delete All
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─────────────────────────────────────────
+       TOAST NOTIFICATION
+  ────────────────────────────────────────── -->
+    <div id="toast"
+        class="fixed bottom-24 left-1/2 -translate-x-1/2 z-[60] px-4 py-2.5 rounded bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-900 text-xs font-medium shadow-lg translate-y-4 opacity-0 pointer-events-none whitespace-nowrap">
+    </div>
+
+    <!-- ─────────────────────────────────────────
+       APPLICATION SCRIPT
+  ────────────────────────────────────────── -->
+    <script>
+        /* =============================================
+         * QUICKREAD — Vanilla JS PWA
+         * ============================================= */
+
+        // ─── State ──────────────────────────────────
+        let history = [];
+        let settings = { preferredDevice: null };
+        let activeTab = 'create';
+        let lastScan = null;
+        let html5QrCode = null;
+        let isScanning = false;
+        let timeAgoInterval = null;
+
+        // ─── DOM References ─────────────────────────
+        const $ = (sel) => document.querySelector(sel);
+        const $$ = (sel) => document.querySelectorAll(sel);
+
+        // ─── Storage ────────────────────────────────
+        function loadState() {
+            try {
+                const h = localStorage.getItem('qr_history');
+                if (h) history = JSON.parse(h);
+                const s = localStorage.getItem('qr_settings');
+                if (s) settings = JSON.parse(s);
+            } catch (e) {
+                console.warn('Failed to load state:', e);
+            }
+        }
+
+        function saveHistory() {
+            try {
+                localStorage.setItem('qr_history', JSON.stringify(history));
+            } catch (e) {
+                console.warn('Failed to save history:', e);
+            }
+        }
+
+        function saveSettings() {
+            try {
+                localStorage.setItem('qr_settings', JSON.stringify(settings));
+            } catch (e) {
+                console.warn('Failed to save settings:', e);
+            }
+        }
+
+        // ─── Navigation ─────────────────────────────
+        function switchTab(tabName) {
+            activeTab = tabName;
+
+            // Update pages
+            $$('.page').forEach(p => p.classList.remove('active'));
+            $(`#page-${tabName}`).classList.add('active');
+
+            // Update tab buttons
+            $$('.tab-btn').forEach(btn => {
+                const isActive = btn.dataset.tab === tabName;
+                btn.classList.toggle('text-primary', isActive);
+                btn.classList.toggle('text-gray-400', !isActive);
+                btn.classList.toggle('dark:text-gray-500', !isActive);
+            });
+
+            // Refresh history if switching to history tab
+            if (tabName === 'history') renderHistory();
+        }
+
+        // ─── Create Tab ─────────────────────────────
+        function setupCreateTab() {
+            const input = $('#create-input');
+            const charCount = $('#char-count');
+            const btnClear = $('#btn-clear');
+            const btnSave = $('#btn-save');
+            const btnPreview = $('#btn-preview');
+
+            // Character counter
+            input.addEventListener('input', () => {
+                const len = input.value.length;
+                charCount.textContent = `${len} / 2331`;
+                charCount.classList.toggle('text-red-400', len > 2200);
+            });
+
+            // Clear button
+            btnClear.addEventListener('click', () => {
+                input.value = '';
+                charCount.textContent = '0 / 2331';
+                charCount.classList.remove('text-red-400');
+                input.focus();
+            });
+
+            // Save button
+            btnSave.addEventListener('click', () => {
+                const text = input.value.trim();
+                if (!text) {
+                    showToast('Enter some text first');
+                    return;
+                }
+                const scan = { time: new Date().toISOString(), value: text };
+                history.unshift(scan);
+                saveHistory();
+                showToast('Saved to history');
+            });
+
+            // Preview button
+            btnPreview.addEventListener('click', () => {
+                const text = input.value.trim();
+                if (!text) {
+                    showToast('Enter some text first');
+                    return;
+                }
+                openPreview(text);
+            });
+
+            // Check for ?message= query param
+            const params = new URLSearchParams(window.location.search);
+            const msg = params.get('message');
+            if (msg) {
+                input.value = msg;
+                charCount.textContent = `${msg.length} / 2331`;
+                // Clean the URL without reloading
+                window.history.replaceState({}, '', window.location.pathname);
+            }
+        }
+
+        // ─── QR Preview ─────────────────────────────
+        function openPreview(text) {
+            const modal = $('#modal-preview');
+            const canvas = $('#qr-canvas');
+            modal.classList.add('active');
+
+            const size = Math.min(window.innerWidth, window.innerHeight) * 0.7;
+            try {
+                new QRious({
+                    element: canvas,
+                    value: text,
+                    size: size,
+                    level: 'M',
+                    foreground: '#000000',
+                    background: '#ffffff',
+                    padding: 0
+                });
+            } catch (err) {
+                showToast('Failed to generate QR code');
+                closePreview();
+            }
+        }
+
+        function closePreview() {
+            $('#modal-preview').classList.remove('active');
+        }
+
+        // ─── Scan Tab ───────────────────────────────
+        function setupScanTab() {
+            $('#btn-scan').addEventListener('click', openScanner);
+        }
+
+        async function openScanner() {
+            const modal = $('#modal-scanner');
+            modal.classList.add('active');
+
+            // Small delay to ensure DOM has rendered and reader div has dimensions
+            await new Promise(r => setTimeout(r, 150));
+
+            try {
+                const devices = await Html5Qrcode.getCameras();
+                if (!devices || devices.length === 0) {
+                    showToast('No cameras found');
+                    closeScanner();
+                    return;
+                }
+
+                // Populate camera dropdown
+                const select = $('#camera-select');
+                select.innerHTML = '';
+                devices.forEach(device => {
+                    const opt = document.createElement('option');
+                    opt.value = device.id;
+                    opt.textContent = device.label || `Camera ${device.id.substring(0, 8)}`;
+                    select.appendChild(opt);
+                });
+
+                // Restore preferred device
+                if (settings.preferredDevice) {
+                    const exists = devices.find(d => d.id === settings.preferredDevice);
+                    if (exists) select.value = settings.preferredDevice;
+                }
+
+                // Camera switch handler
+                select.onchange = async () => {
+                    settings.preferredDevice = select.value;
+                    saveSettings();
+                    if (html5QrCode && isScanning) {
+                        try { await html5QrCode.stop(); } catch (e) { }
+                        isScanning = false;
+                    }
+                    await startScanning(select.value);
+                };
+
+                // Start scanning
+                html5QrCode = new Html5Qrcode('reader');
+                await startScanning(select.value);
+
+            } catch (err) {
+                console.error('Scanner error:', err);
+                showToast('Could not access camera');
+                closeScanner();
+            }
+        }
+
+        async function startScanning(deviceId) {
+            try {
+                await html5QrCode.start(
+                    deviceId,
+                    { fps: 10, qrbox: { width: 250, height: 250 } },
+                    onScanSuccess,
+                    () => { } // Ignore continuous scan failures
+                );
+                isScanning = true;
+            } catch (err) {
+                console.error('Scan start error:', err);
+                showToast('Failed to start scanner');
+            }
+        }
+
+        function onScanSuccess(decodedText) {
+            const scan = { time: new Date().toISOString(), value: decodedText };
+            history.unshift(scan);
+            saveHistory();
+            lastScan = scan;
+            renderLastScan();
+            closeScanner();
+            showToast('Code scanned successfully!');
+        }
+
+        async function closeScanner() {
+            if (html5QrCode && isScanning) {
+                try { await html5QrCode.stop(); } catch (e) { }
+                isScanning = false;
+            }
+            if (html5QrCode) {
+                try { html5QrCode.clear(); } catch (e) { }
+                html5QrCode = null;
+            }
+            $('#modal-scanner').classList.remove('active');
+        }
+
+        function renderLastScan() {
+            const container = $('#last-scan');
+            if (!lastScan) {
+                container.classList.add('hidden');
+                return;
+            }
+            container.classList.remove('hidden');
+            container.innerHTML = buildScanCard(lastScan, -1); // -1 = last scan (not from history list)
+        }
+
+        // ─── History Tab ────────────────────────────
+        function setupHistoryTab() {
+            // Clear all button
+            $('#btn-clear-all').addEventListener('click', () => {
+                $('#modal-confirm').classList.add('active');
+            });
+
+            // Confirm clear
+            $('#btn-confirm-clear').addEventListener('click', () => {
+                history = [];
+                saveHistory();
+                lastScan = null;
+                renderLastScan();
+                renderHistory();
+                $('#modal-confirm').classList.remove('active');
+                showToast('History cleared');
+            });
+
+            // Cancel clear
+            $('#btn-cancel-clear').addEventListener('click', () => {
+                $('#modal-confirm').classList.remove('active');
+            });
+
+            // Event delegation for history list actions
+            $('#history-list').addEventListener('click', (e) => {
+                const btn = e.target.closest('[data-action]');
+                if (!btn) return;
+                const action = btn.dataset.action;
+                const index = parseInt(btn.dataset.index);
+                handleCardAction(action, index);
+            });
+
+            // Event delegation for last scan card actions
+            $('#last-scan').addEventListener('click', (e) => {
+                const btn = e.target.closest('[data-action]');
+                if (!btn) return;
+                const action = btn.dataset.action;
+                // Last scan actions use the lastScan object directly
+                handleLastScanAction(action);
+            });
+        }
+
+        function handleCardAction(action, index) {
+            if (index < 0 || index >= history.length) return;
+            const scan = history[index];
+
+            switch (action) {
+                case 'copy':
+                    copyToClipboard(scan.value);
+                    break;
+                case 'recreate':
+                    $('#create-input').value = scan.value;
+                    $('#char-count').textContent = `${scan.value.length} / 2331`;
+                    switchTab('create');
+                    break;
+                case 'delete':
+                    history.splice(index, 1);
+                    saveHistory();
+                    renderHistory();
+                    showToast('Scan removed');
+                    break;
+            }
+        }
+
+        function handleLastScanAction(action) {
+            if (!lastScan) return;
+
+            switch (action) {
+                case 'copy':
+                    copyToClipboard(lastScan.value);
+                    break;
+                case 'recreate':
+                    $('#create-input').value = lastScan.value;
+                    $('#char-count').textContent = `${lastScan.value.length} / 2331`;
+                    switchTab('create');
+                    break;
+                case 'delete':
+                    // Remove from history if it's the first item and matches
+                    if (history.length > 0 && history[0].time === lastScan.time && history[0].value === lastScan.value) {
+                        history.shift();
+                        saveHistory();
+                    }
+                    lastScan = null;
+                    renderLastScan();
+                    showToast('Scan removed');
+                    break;
+            }
+        }
+
+        function renderHistory() {
+            const list = $('#history-list');
+            const empty = $('#history-empty');
+            const clearBtn = $('#btn-clear-all');
+
+            if (history.length === 0) {
+                list.innerHTML = '';
+                empty.classList.remove('hidden');
+                empty.classList.add('flex');
+                clearBtn.classList.add('hidden');
+                return;
+            }
+
+            empty.classList.add('hidden');
+            empty.classList.remove('flex');
+            clearBtn.classList.remove('hidden');
+
+            list.innerHTML = history.map((scan, i) => buildScanCard(scan, i)).join('');
+        }
+
+        function buildScanCard(scan, index) {
+            const escaped = escapeHtml(scan.value);
+            const ago = timeAgo(scan.time);
+            const dataIndex = index >= 0 ? `data-index="${index}"` : '';
+
+            return `
+        <div class="border-b border-gray-100 dark:border-gray-800 py-3 mb-0">
+          <p class="text-[11px] text-gray-400 dark:text-gray-600 mb-1 time-label" data-time="${scan.time}">${ago}</p>
+          <p class="text-sm text-gray-800 dark:text-gray-200 break-words whitespace-pre-wrap leading-relaxed mb-2">${escaped}</p>
+          <div class="flex justify-end gap-0">
+            <button data-action="copy" ${dataIndex} class="btn-flat p-2 text-primary hover:bg-primary/10 rounded" title="Copy to clipboard">
+              <svg class="w-4 h-4 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9.75a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184"/>
+              </svg>
+            </button>
+            <button data-action="recreate" ${dataIndex} class="btn-flat p-2 text-primary hover:bg-primary/10 rounded" title="Open in Create">
+              <svg class="w-4 h-4 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="3" y="3" width="7" height="7" rx="1"/>
+                <rect x="14" y="3" width="7" height="7" rx="1"/>
+                <rect x="3" y="14" width="7" height="7" rx="1"/>
+                <rect x="14" y="14" width="3.5" height="3.5"/>
+                <rect x="17.5" y="14" width="3.5" height="3.5"/>
+                <rect x="14" y="17.5" width="3.5" height="3.5"/>
+                <rect x="17.5" y="17.5" width="3.5" height="3.5"/>
+              </svg>
+            </button>
+            <button data-action="delete" ${dataIndex} class="btn-flat p-2 text-red-500 hover:bg-red-500/10 rounded" title="Delete">
+              <svg class="w-4 h-4 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      `;
+        }
+
+        // ─── UI Utilities ───────────────────────────
+        function showToast(message, duration = 2500) {
+            const toast = $('#toast');
+            toast.textContent = message;
+            // Force reflow for transition restart
+            toast.offsetHeight;
+            toast.style.transform = 'translate(-50%, 0)';
+            toast.style.opacity = '1';
+
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => {
+                toast.style.transform = 'translate(-50%, 1rem)';
+                toast.style.opacity = '0';
+            }, duration);
+        }
+
+        async function copyToClipboard(text) {
+            try {
+                await navigator.clipboard.writeText(text);
+                showToast('Copied to clipboard!');
+            } catch (e) {
+                // Fallback for older browsers / insecure contexts
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.position = 'fixed';
+                ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                showToast('Copied to clipboard!');
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function timeAgo(dateStr) {
+            const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+            if (seconds < 5) return 'just now';
+            const intervals = [
+                { label: 'year', s: 31536000 },
+                { label: 'month', s: 2592000 },
+                { label: 'week', s: 604800 },
+                { label: 'day', s: 86400 },
+                { label: 'hour', s: 3600 },
+                { label: 'minute', s: 60 },
+                { label: 'second', s: 1 },
+            ];
+            for (const { label, s } of intervals) {
+                const count = Math.floor(seconds / s);
+                if (count >= 1) return `${count} ${label}${count > 1 ? 's' : ''} ago`;
+            }
+            return 'just now';
+        }
+
+        function refreshTimeLabels() {
+            $$('.time-label').forEach(el => {
+                el.textContent = timeAgo(el.dataset.time);
+            });
+        }
+
+        // ─── PWA / Service Worker ───────────────────
+        function registerServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('SW registered:', reg.scope))
+                    .catch(err => console.warn('SW registration failed:', err));
+            }
+        }
+
+        // ─── Modal Close Handlers ───────────────────
+        function setupModals() {
+            // Preview modal
+            $('#btn-close-preview').addEventListener('click', closePreview);
+            $('#modal-preview').addEventListener('click', (e) => {
+                if (e.target === e.currentTarget) closePreview();
+            });
+
+            // Scanner modal
+            $('#btn-close-scanner').addEventListener('click', closeScanner);
+
+            // Confirm modal — close on backdrop click
+            $('#modal-confirm').addEventListener('click', (e) => {
+                if (e.target === e.currentTarget) {
+                    $('#modal-confirm').classList.remove('active');
+                }
+            });
+        }
+
+        // ─── Tab Button Setup ───────────────────────
+        function setupTabButtons() {
+            $$('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+            });
+        }
+
+        // ─── Initialize ─────────────────────────────
+        function init() {
+            loadState();
+            setupTabButtons();
+            setupCreateTab();
+            setupScanTab();
+            setupHistoryTab();
+            setupModals();
+            registerServiceWorker();
+            switchTab('create');
+
+            // Update time labels every 30 seconds
+            timeAgoInterval = setInterval(refreshTimeLabels, 30000);
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+
+</body>
+
+</html>
